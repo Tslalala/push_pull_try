@@ -8,7 +8,7 @@ from dataset import trainset_path, testset_path
 from utils import call_model, get_protos, test_accuracy
 from pploss import PPLoss
 
-
+'''test'''
 def train(model, device, num_epochs, train_loader, test_loader, optimizer):
 
     # 实例化PPLoss，第一次推理得到prototype
