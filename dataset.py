@@ -6,6 +6,8 @@ from torchvision import transforms
 from PIL import Image
 from sklearn.preprocessing import LabelEncoder
 
+'''与远程主机内容一致'''
+
 
 class CustomDataset(Dataset):
     def __init__(self, image_dir, transform=None):
@@ -77,6 +79,7 @@ transform_pet2res = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # 归一化
 ])
 
+
 # 下载训练数据集
 def trainset_path(dataset_name, call_vit=True):
     path_cifar = 'E:\\DATA4DL\\cifar'
@@ -84,15 +87,30 @@ def trainset_path(dataset_name, call_vit=True):
 
     if 'cifar100' in dataset_name:
         print('training on cifar100---')
-        dataset_call_vit = torchvision.datasets.CIFAR100(root=path_cifar, train=True, download=True, transform=transform_cifar2vit)
-        dataset_call_res = torchvision.datasets.CIFAR100(root=path_cifar, train=True, download=True, transform=transform_cifar2res)
+        dataset_call_vit = torchvision.datasets.CIFAR100(root=path_cifar, train=True, download=True,
+                                                         transform=transform_cifar2vit)
+        dataset_call_res = torchvision.datasets.CIFAR100(root=path_cifar, train=True, download=True,
+                                                         transform=transform_cifar2res)
 
         return dataset_call_vit if call_vit else dataset_call_res
 
     elif 'cifar10' in dataset_name:
         print('training on cifar10---')
-        dataset_call_vit = torchvision.datasets.CIFAR10(root=path_cifar, train=True, download=True, transform=transform_cifar2vit)
-        dataset_call_res = torchvision.datasets.CIFAR10(root=path_cifar, train=True, download=True, transform=transform_cifar2vit)
+        dataset_call_vit = torchvision.datasets.CIFAR10(root=path_cifar, train=True, download=True,
+                                                        transform=transform_cifar2vit)
+        dataset_call_res = torchvision.datasets.CIFAR10(root=path_cifar, train=True, download=True,
+                                                        transform=transform_cifar2vit)
+
+        return dataset_call_vit if call_vit else dataset_call_res
+
+    elif 'pet10' in dataset_name:
+        print('training on Oxford-IIIT_Pet10---')
+        # 使用自定义数据集类创建训练集和测试集
+        train_dir = "E:/DATA4DL/Oxford-IIIT_Pet10/split_images/train"  # 训练集路径
+        test_dir = "E:/DATA4DL/Oxford-IIIT_Pet10/split_images/test"  # 测试集路径
+
+        dataset_call_vit = CustomDataset(image_dir=train_dir, transform=transform_pet2vit)
+        dataset_call_res = CustomDataset(image_dir=train_dir, transform=transform_pet2res)
 
         return dataset_call_vit if call_vit else dataset_call_res
 
@@ -107,8 +125,21 @@ def trainset_path(dataset_name, call_vit=True):
 
         return dataset_call_vit if call_vit else dataset_call_res
 
+    return None
+
+
 def testset_path(dataset_name, call_vit=True):
-    if 'pet' in dataset_name:
+    if 'pet10' in dataset_name:
+        # 使用自定义数据集类创建训练集和测试集
+        train_dir = "E:/DATA4DL/Oxford-IIIT_Pet10/split_images/train"  # 训练集路径
+        test_dir = "E:/DATA4DL/Oxford-IIIT_Pet10/split_images/test"  # 测试集路径
+
+        dataset_call_vit = CustomDataset(image_dir=test_dir, transform=transform_pet2vit)
+        dataset_call_res = CustomDataset(image_dir=test_dir, transform=transform_pet2res)
+
+        return dataset_call_vit if call_vit else dataset_call_res
+
+    elif 'pet' in dataset_name:
         # 使用自定义数据集类创建训练集和测试集
         train_dir = "E:/DATA4DL/Oxford-IIIT_Pet/split_images/train"  # 训练集路径
         test_dir = "E:/DATA4DL/Oxford-IIIT_Pet/split_images/test"  # 测试集路径
@@ -117,3 +148,5 @@ def testset_path(dataset_name, call_vit=True):
         dataset_call_res = CustomDataset(image_dir=test_dir, transform=transform_pet2res)
 
         return dataset_call_vit if call_vit else dataset_call_res
+
+    return None

@@ -12,12 +12,12 @@ from pploss import PPLoss
 def train(model, device, num_epochs, train_loader, test_loader, optimizer):
 
     # 实例化PPLoss，第一次推理得到prototype
-    loss_fn = PPLoss(alpha=1.0, beta=0., reduction='mean')
+    loss_fn = PPLoss(alpha=0.01, beta=0.01, reduction='mean')
     feature_proto_list = torch.stack(get_protos(data_loader=train_loader, device=device, model=model)).to(device)
-    test_accuracy(model=model, data_loader=train_loader, prototypes=feature_proto_list, epoch=0,
-                  num_epochs=0, device=device, words='Train')
-    test_accuracy(model=model, data_loader=test_loader, prototypes=feature_proto_list, epoch=0,
-                  num_epochs=0, device=device, words='Test')
+    # test_accuracy(model=model, data_loader=train_loader, prototypes=feature_proto_list, epoch=0,
+    #               num_epochs=1, device=device, words='Train')
+    # test_accuracy(model=model, data_loader=test_loader, prototypes=feature_proto_list, epoch=0,
+    #               num_epochs=1, device=device, words='Test')
 
     for epoch in range(num_epochs):
         model.train()  # 确保模型在训练模式
@@ -43,7 +43,7 @@ def train(model, device, num_epochs, train_loader, test_loader, optimizer):
                 # pbar.update(1)  # 更新进度条
 
                 # 推理得到prototypes
-                if batch_counter % 10 == 0:
+                if batch_counter % 1 == 0:
                     feature_proto_list = torch.stack(get_protos(data_loader=train_loader, device=device, model=model)).to(device)
                     test_accuracy(model=model, data_loader=train_loader, prototypes=feature_proto_list, epoch=epoch,
                                   num_epochs=num_epochs, device=device, words='Train')
@@ -58,10 +58,10 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     train_loader = DataLoader(trainset_path('pet'), batch_size=64, shuffle=True)
     test_loader = DataLoader(testset_path('pet'), batch_size=64, shuffle=True)
-    model = call_model(model_name='vit_base_patch16_224_in21k', Prompt_Token_num=1, VPT_type='Deep',
+    model = call_model(model_name='vit_base_patch16_224_in21k', Prompt_Token_num=10, VPT_type='Deep',
                        frozen_heads=True, classes=35)
     model.to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=1e-2)
+    optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
     train(model, device, 20, train_loader=train_loader, test_loader=test_loader, optimizer=optimizer)
 
 

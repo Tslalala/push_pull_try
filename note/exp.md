@@ -30,12 +30,28 @@ best test_acc=89.69% at epoch14
 
 **实验2**  
 main_ce_proto.py  
-使用Frozen的ViT，  
+使用Frozen的ViT，不训练  
 Prompt_Token_num=10，test_acc=82.41%,   
 Prompt_Token_num= 1, test_acc=84.27%,  
 可见使用CrossEntropyLoss能够指引proto方法效果更好，即使得聚类效果更佳
 ***
 **0225 周二**  
 **实验3** 
-main_pp.py
-预训练ViT在84.27%
+main_pp_.py
+预训练ViT在Prompt_Token_num=10时，test_acc=82.41%，  
+当我使用下面参数进行PPLoss的指导训练
+~~~python
+    train_loader = DataLoader(trainset_path('pet'), batch_size=64, shuffle=True)
+    test_loader = DataLoader(testset_path('pet'), batch_size=64, shuffle=True)
+    model = call_model(model_name='vit_base_patch16_224_in21k', Prompt_Token_num=10, VPT_type='Deep',
+                       frozen_heads=True, classes=35)
+    model.to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
+    train(model, device, 20, train_loader=train_loader, test_loader=test_loader, optimizer=optimizer)
+~~~
+其中loss_fn = PPLoss(alpha=0.01, beta=0.01, reduction='mean')  
+每一个epoch更新一次prototypes  
+Train Epoch [1/20]: 100%|█████████████████| 70/70 [00:38<00:00,  1.83it/s, accuracy=89.67%]  
+Test Epoch [1/20]: 100%|██████████████████| 47/47 [00:24<00:00,  1.92it/s, accuracy=88.40%]  
+test_acc=88.40%，较实验2的main_ce_proto.py可见PPLoss有效果，  
+但是效果不如实验1的main_ce_proto.py，实验1的ce还是现在的PPLoss更猛  

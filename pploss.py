@@ -13,6 +13,7 @@ class PPLoss(nn.Module):
             reduction (str): 损失计算方式，可选 'mean' 或 'sum'。
         """
         super().__init__()
+        self.unique_labels = None
         self.delta = delta
         self.alpha = alpha
         self.beta = beta
@@ -34,6 +35,10 @@ class PPLoss(nn.Module):
         if prototypes is None:
             prototypes = self._compute_prototypes(features, labels)
 
+        # 处理labels
+        unique_labels = torch.unique(labels)
+        self.unique_labels = unique_labels
+
         # 计算Pull Loss：类内聚合（同类特征靠近原型）
         pull_loss = self._compute_pull_loss(features, labels, prototypes)
 
@@ -54,9 +59,8 @@ class PPLoss(nn.Module):
         Returns:
             prototypes: [C_batch, D]，C_batch为当前batch中实际存在的类别数
         """
-        unique_labels = torch.unique(labels)
         prototypes = []
-        for c in unique_labels:
+        for c in self.unique_labels:
             mask = (labels == c)
             class_features = features[mask]
             proto = class_features.mean(dim=0)  # [D]
@@ -87,18 +91,18 @@ class PPLoss(nn.Module):
         Args:
             prototypes: [35, 768]
         """
-        # 确保输入为二维张量（即使C=1）
-        prototypes = prototypes.view(35, -1)  # 强制转换为[35, 768]
+        # 计算类别数
+        num_classes = self.unique_labels.size(0)
 
-        # 计算所有原型对的欧氏距离 [35, 35]
+        # 计算所有原型对的欧氏距离 [num_classes, num_classes]
         pairwise_dist = torch.cdist(prototypes, prototypes, p=2)
 
         # 排除对角线（自身距离）
-        mask = 1 - torch.eye(35, device=prototypes.device)
-        penalty = torch.relu(self.delta - pairwise_dist * mask)  # [35, 35]
+        mask = 1 - torch.eye(num_classes, device=prototypes.device)
+        penalty = torch.relu(self.delta - pairwise_dist * mask)  # [num_classes, num_classes]
 
         # 仅计算上三角部分（避免重复计算）
-        upper_tri = torch.triu_indices(35, 35, offset=1)
+        upper_tri = torch.triu_indices(num_classes, num_classes, offset=1)
         push_loss = torch.mean(penalty[upper_tri[0], upper_tri[1]] ** 2)
 
         return push_loss

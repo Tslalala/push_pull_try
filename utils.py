@@ -2,6 +2,11 @@ import numpy as np
 from tqdm import tqdm
 import torch
 import torch.nn.functional as F
+import matplotlib.pyplot as plt
+from sklearn.manifold import TSNE
+import os
+
+'''与远程主机内容区别于'''
 from convs.vpt import build_promptmodel
 from convs.resnet_big import SupConResNet
 
@@ -152,3 +157,46 @@ def test_accuracy(model, data_loader, prototypes, epoch, num_epochs, device, wor
                 pbar_test.update(1)
 
     return test_accuracy
+
+def tsne_classes(feature_bank, target_bank):
+    # 假设 feature_bank 和 target_bank 已经转换为 NumPy 数组
+    feature_bank = feature_bank.numpy()
+    target_bank = target_bank.numpy()
+
+    # 执行 t-SNE 降维
+
+    os.environ["LOKY_MAX_CPU_COUNT"] = "10"  # 假设你有4个CPU核心
+    tsne = TSNE(n_components=2, random_state=0, n_jobs=1)
+    output = tsne.fit_transform(feature_bank)
+
+    # 获取唯一的类别标签
+    unique_labels = np.unique(target_bank)
+
+    # 示例：自定义 12 种高对比度颜色（HEX 格式）
+    custom_colors = [
+        '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
+        '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
+        '#bcbd22', '#17becf', '#aec7e8', '#ffbb78'
+    ]
+
+    # 绘制散点图
+    plt.figure(figsize=(10, 8))
+    for i, label in enumerate(unique_labels):
+        index = (target_bank == label)
+        color = custom_colors[i % len(custom_colors)]  # 循环使用颜色
+        plt.scatter(
+            output[index, 0],
+            output[index, 1],
+            s=40,
+            color=color,
+            edgecolors='k',
+            linewidths=0.3,
+            alpha=0.8,
+            label=f'Class {label}'
+        )
+
+    plt.legend(markerscale=2)
+    plt.title('t-SNE Visualization')
+    plt.xlabel('t-SNE Component 1')
+    plt.ylabel('t-SNE Component 2')
+    plt.show()
