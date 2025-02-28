@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 
 from dataset import trainset_path, testset_path
 from utils import call_model, get_protos, test_accuracy
-from pploss import PPLoss
+from losses import PPLoss
 
 '''test'''
 def train(model, device, num_epochs, train_loader, test_loader, optimizer):

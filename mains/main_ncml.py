@@ -8,13 +8,13 @@ import matplotlib.pyplot as plt
 
 from dataset import trainset_path, testset_path
 from utils import call_model, get_protos, test_accuracy, get_protos_with_tqdm, tsne_classes
-from losses import PPLoss
+from losses import PPLoss, NCMLoss
 
 '''test'''
 def train(model, device, num_epochs, train_loader, test_loader, optimizer):
 
     # 实例化PPLoss，第一次推理得到prototype
-    loss_fn = PPLoss(alpha=0.1, beta=0.2, reduction='mean')
+    loss_fn = NCMLoss()
     feature_proto_list = torch.stack(get_protos_with_tqdm(data_loader=train_loader, device=device, model=model)).to(device)
     # test_accuracy(model=model, data_loader=train_loader, prototypes=feature_proto_list, epoch=0,
     #               num_epochs=1, device=device, words='Train')
@@ -51,8 +51,8 @@ def train(model, device, num_epochs, train_loader, test_loader, optimizer):
                 pbar.update(1)  # 更新进度条
 
                 # 不想跑完train_loader
-                if batch_counter == 5:
-                    break
+                # if batch_counter == 15:
+                #     break
 
         # 推理得到prototypes
         feature_proto_list = torch.stack(get_protos_with_tqdm(data_loader=train_loader, device=device, model=model)).to(device)
@@ -68,13 +68,13 @@ def train(model, device, num_epochs, train_loader, test_loader, optimizer):
 
 def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    data_name = 'pet10'
+    data_name = 'pet'
     train_loader = DataLoader(trainset_path(dataset_name=data_name), batch_size=80, shuffle=True)
     test_loader = DataLoader(testset_path(dataset_name=data_name), batch_size=64, shuffle=True)
     model = call_model(model_name='vit_base_patch16_224_in21k', Prompt_Token_num=10, VPT_type='Deep',
                        frozen_heads=True, classes=35)
     model.to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
+    optimizer = torch.optim.SGD(model.parameters(), lr=1e-2)
     train(model, device, 20, train_loader=train_loader, test_loader=test_loader, optimizer=optimizer)
 
 
