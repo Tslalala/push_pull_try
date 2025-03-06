@@ -71,7 +71,7 @@ def train(model, device, num_epochs, train_loader, test_loader, optimizer, loss_
                     loss = loss_fn(outputs, targets)
 
                     for _, test_output in enumerate(outputs):
-                        predict = classify_with_proto(test_output=test_output, proto_list=feature_proto_list)
+                        predict = classify_with_proto(test_output=test_output, prototypes=torch.stack(feature_proto_list))
                         y_pred.append(predict)
                         y_true.append(targets[_].item())
 
@@ -84,9 +84,10 @@ def train(model, device, num_epochs, train_loader, test_loader, optimizer, loss_
 
 def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    train_loader = DataLoader(trainset_path('pet'), batch_size=64, shuffle=True)
-    test_loader = DataLoader(testset_path('pet'), batch_size=64, shuffle=True)
-    model = call_model(model_name='vit_base_patch16_224_in21k', Prompt_Token_num=1, VPT_type='Deep',
+    data_name = 'pet10'
+    train_loader = DataLoader(trainset_path(data_name), batch_size=80, shuffle=True)
+    test_loader = DataLoader(testset_path(data_name), batch_size=64, shuffle=True)
+    model = call_model(model_name='vit_base_patch16_224_in21k', Prompt_Token_num=10, VPT_type='Deep',
                        frozen_heads=False, classes=35)
     model.to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-2)

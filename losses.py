@@ -145,8 +145,7 @@ class NCMLoss(nn.Module):
         # 计算交叉熵损失（需对齐原型索引与标签）
         unique_labels = torch.unique(labels)
         label_mapping = {l.item(): idx for idx, l in enumerate(unique_labels)}
-        mapped_labels = torch.tensor([label_mapping[l.item()] for l in labels],
-                                     device=features.device)
+        mapped_labels = torch.tensor([label_mapping[l.item()] for l in labels], device=features.device)
 
         loss = F.cross_entropy(logits, mapped_labels)
         return loss

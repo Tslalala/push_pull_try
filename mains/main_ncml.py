@@ -54,8 +54,12 @@ def train(model, device, num_epochs, train_loader, test_loader, optimizer):
                 # if batch_counter == 15:
                 #     break
 
+                # 在训练时更新prototypes, 通常没太多用
+                # if batch_counter % 5 == 1:
+                #     feature_proto_list = torch.stack(get_protos(data_loader=train_loader, device=device, model=model)).to(device)
+
         # 推理得到prototypes
-        feature_proto_list = torch.stack(get_protos_with_tqdm(data_loader=train_loader, device=device, model=model)).to(device)
+        # feature_proto_list = torch.stack(get_protos_with_tqdm(data_loader=train_loader, device=device, model=model)).to(device)
         test_accuracy(model=model, data_loader=train_loader, prototypes=feature_proto_list, epoch=epoch,
                       num_epochs=num_epochs, device=device, words='Train')
         test_accuracy(model=model, data_loader=test_loader, prototypes=feature_proto_list, epoch=epoch,
@@ -68,13 +72,13 @@ def train(model, device, num_epochs, train_loader, test_loader, optimizer):
 
 def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    data_name = 'pet'
+    data_name = 'pet10'
     train_loader = DataLoader(trainset_path(dataset_name=data_name), batch_size=80, shuffle=True)
     test_loader = DataLoader(testset_path(dataset_name=data_name), batch_size=64, shuffle=True)
     model = call_model(model_name='vit_base_patch16_224_in21k', Prompt_Token_num=10, VPT_type='Deep',
                        frozen_heads=True, classes=35)
     model.to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=1e-2)
+    optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
     train(model, device, 20, train_loader=train_loader, test_loader=test_loader, optimizer=optimizer)
 
 

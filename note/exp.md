@@ -70,6 +70,25 @@ main_pp_.py
 
 ***
 
-**0227 周四**  
+**0305 周三**  
 **实验5**  
-.py  
+main_ncml.py
+Pet还是太大了取Pet里面的10个类组建了Pet10，增加了NCMLoss，  
+依旧是ViT-Deep, Prompt_Tokens=10，lr=1e-2，batchsize=80  
+Train Epoch [18/20]: 100%|██| 17/17 [00:10<00:00,  1.60it/s, accuracy=98.86%]  
+Test Epoch [18/20]: 100%|███| 14/14 [00:07<00:00,  1.97it/s, accuracy=95.34%]  
+有一些其他的实验还没有做，让我们补一下ce方法下和pp方法下的这一acc  
+
+在main_ce_proto.py下  
+Epoch [17/20]: 100%|███| 17/17 [01:35<00:00,  5.64s/it, accuracy=99.85%, loss=0.0256]
+Inference: 100%|███████| 17/17 [00:10<00:00,  1.67it/s]
+Test [17/20]: 100%|████| 14/14 [00:07<00:00,  1.99it/s, accuracy=94.77%]
+
+在main_pp_.py下一直跑不起来我也懒得跑了说是  
+anyway我们验证了NCMLoss在classes=10时的对NCM分类的有效性是可以与CrossEntropyLoss相当的  
+但是ncml可以继续扩展到增量场景下，所以下一步**也许是**在增量场景下研究NCMLoss  
+但是老实讲我对NCMLoss还是觉得是否太**简单**，尤其是其更新直接影响到prototypes  
+于是我做了这么个实验: 使用NCMLoss但是不更新prototypes，然后我得到了:  
+Train Epoch [17/20]: 100%|██| 17/17 [00:10<00:00,  1.62it/s, accuracy=98.71%]  
+Test Epoch [17/20]: 100%|███| 14/14 [00:07<00:00,  2.00it/s, accuracy=96.36%]   
+就离谱  
